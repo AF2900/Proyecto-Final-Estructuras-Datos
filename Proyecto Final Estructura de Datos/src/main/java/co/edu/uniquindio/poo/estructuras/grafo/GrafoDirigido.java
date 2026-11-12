@@ -1,5 +1,7 @@
 package co.edu.uniquindio.poo.estructuras.grafo;
 
+import co.edu.uniquindio.poo.estructuras.cola.Cola;
+
 import java.util.*;
 
 public class GrafoDirigido {
@@ -124,6 +126,7 @@ public class GrafoDirigido {
                     monto
             );
 
+
             return true;
         }
 
@@ -159,6 +162,7 @@ public class GrafoDirigido {
 
 
         if (arista == null) {
+
             return false;
         }
 
@@ -207,6 +211,7 @@ public class GrafoDirigido {
 
 
         if (aristas == null) {
+
             return null;
         }
 
@@ -241,6 +246,7 @@ public class GrafoDirigido {
 
 
         if (arista == null) {
+
             return 0;
         }
 
@@ -262,6 +268,7 @@ public class GrafoDirigido {
 
 
         if (arista == null) {
+
             return 0;
         }
 
@@ -311,11 +318,13 @@ public class GrafoDirigido {
 
 
         if (aristas == null) {
+
             return 0;
         }
 
 
-        double total = 0;
+        double total =
+                0;
 
 
         for (AristaGrafo arista :
@@ -371,7 +380,7 @@ public class GrafoDirigido {
 
 
     // ---------------------------------------------------------
-    // BFS
+    // RECORRIDO EN ANCHURA - BFS
     // ---------------------------------------------------------
 
     public List<String>
@@ -382,23 +391,40 @@ public class GrafoDirigido {
                 new ArrayList<>();
 
 
-        if (!adyacencias.containsKey(
-                inicio
-        )) {
+        if (inicio == null ||
+                !adyacencias.containsKey(
+                        inicio
+                )) {
 
             return resultado;
         }
 
 
-        Queue<String> cola =
-                new ArrayDeque<>();
+        /*
+         * Para BFS utilizamos nuestra
+         * propia implementación de Cola.
+         *
+         * El recorrido en anchura necesita
+         * comportamiento FIFO:
+         *
+         * primero en entrar,
+         * primero en salir.
+         */
+        Cola<String> cola =
+                new Cola<>(
+                        Integer.MAX_VALUE
+                );
 
 
         Set<String> visitados =
                 new HashSet<>();
 
 
-        cola.offer(
+        /*
+         * El vértice inicial entra
+         * al final de la cola.
+         */
+        cola.encolar(
                 inicio
         );
 
@@ -408,10 +434,14 @@ public class GrafoDirigido {
         );
 
 
-        while (!cola.isEmpty()) {
+        while (!cola.estaVacia()) {
 
+            /*
+             * Se retira el primer
+             * vértice de la cola.
+             */
             String actual =
-                    cola.poll();
+                    cola.desencolar();
 
 
             resultado.add(
@@ -419,6 +449,10 @@ public class GrafoDirigido {
             );
 
 
+            /*
+             * Recorremos todos los
+             * vecinos del vértice.
+             */
             for (AristaGrafo arista :
                     obtenerAdyacentes(
                             actual
@@ -428,6 +462,10 @@ public class GrafoDirigido {
                         arista.getDestino();
 
 
+                /*
+                 * Un vértice solamente
+                 * debe visitarse una vez.
+                 */
                 if (!visitados.contains(
                         destino
                 )) {
@@ -437,7 +475,11 @@ public class GrafoDirigido {
                     );
 
 
-                    cola.offer(
+                    /*
+                     * El nuevo vértice
+                     * entra al final.
+                     */
+                    cola.encolar(
                             destino
                     );
                 }

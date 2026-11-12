@@ -1,11 +1,15 @@
 package co.edu.uniquindio.poo.service;
 
 import co.edu.uniquindio.poo.enums.TipoNotificacion;
+import co.edu.uniquindio.poo.estructuras.cola.Cola;
 import co.edu.uniquindio.poo.estructuras.listacircular.ListaCircular;
 import co.edu.uniquindio.poo.model.Notificacion;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GestorNotificaciones {
 
@@ -13,9 +17,10 @@ public class GestorNotificaciones {
      * Cada cliente conserva todas sus
      * notificaciones en una lista circular.
      */
-    private final Map<String,
-            ListaCircular<Notificacion>>
-            notificacionesPorCliente;
+    private final Map<
+            String,
+            ListaCircular<Notificacion>
+            > notificacionesPorCliente;
 
 
     /*
@@ -26,9 +31,10 @@ public class GestorNotificaciones {
      * la primera notificación recibida
      * será la primera en ser atendida.
      */
-    private final Map<String,
-            Queue<Notificacion>>
-            pendientesPorCliente;
+    private final Map<
+            String,
+            Cola<Notificacion>
+            > pendientesPorCliente;
 
 
     private int consecutivo;
@@ -39,10 +45,8 @@ public class GestorNotificaciones {
         notificacionesPorCliente =
                 new HashMap<>();
 
-
         pendientesPorCliente =
                 new HashMap<>();
-
 
         consecutivo = 1;
     }
@@ -81,7 +85,9 @@ public class GestorNotificaciones {
 
         pendientesPorCliente.put(
                 identificacionCliente,
-                new ArrayDeque<>()
+                new Cola<>(
+                        Integer.MAX_VALUE
+                )
         );
 
 
@@ -113,7 +119,7 @@ public class GestorNotificaciones {
                 );
 
 
-        Queue<Notificacion> cola =
+        Cola<Notificacion> cola =
                 pendientesPorCliente.get(
                         identificacionCliente
                 );
@@ -143,7 +149,7 @@ public class GestorNotificaciones {
          * Lista circular:
          * historial completo.
          *
-         * Queue:
+         * Cola:
          * notificaciones pendientes.
          */
         lista.agregar(
@@ -151,7 +157,7 @@ public class GestorNotificaciones {
         );
 
 
-        cola.offer(
+        cola.encolar(
                 notificacion
         );
 
@@ -191,22 +197,24 @@ public class GestorNotificaciones {
     verSiguientePendiente(
             String identificacionCliente) {
 
-        Queue<Notificacion> cola =
+        Cola<Notificacion> cola =
                 pendientesPorCliente.get(
                         identificacionCliente
                 );
 
 
-        if (cola == null) {
+        if (cola == null ||
+                cola.estaVacia()) {
+
             return null;
         }
 
 
         /*
-         * peek() consulta el primer elemento
+         * Consulta el primer elemento
          * sin eliminarlo.
          */
-        return cola.peek();
+        return cola.verPrimero();
     }
 
 
@@ -214,28 +222,25 @@ public class GestorNotificaciones {
     atenderSiguientePendiente(
             String identificacionCliente) {
 
-        Queue<Notificacion> cola =
+        Cola<Notificacion> cola =
                 pendientesPorCliente.get(
                         identificacionCliente
                 );
 
 
-        if (cola == null) {
+        if (cola == null ||
+                cola.estaVacia()) {
+
             return null;
         }
 
 
         /*
-         * poll() obtiene y elimina
+         * Desencolar obtiene y elimina
          * el primer elemento de la cola.
          */
         Notificacion notificacion =
-                cola.poll();
-
-
-        if (notificacion == null) {
-            return null;
-        }
+                cola.desencolar();
 
 
         notificacion.marcarComoLeida();
@@ -248,7 +253,7 @@ public class GestorNotificaciones {
     public int cantidadPendientes(
             String identificacionCliente) {
 
-        Queue<Notificacion> cola =
+        Cola<Notificacion> cola =
                 pendientesPorCliente.get(
                         identificacionCliente
                 );
@@ -259,7 +264,7 @@ public class GestorNotificaciones {
         }
 
 
-        return cola.size();
+        return cola.getSize();
     }
 
 
@@ -276,7 +281,7 @@ public class GestorNotificaciones {
     obtenerPendientes(
             String identificacionCliente) {
 
-        Queue<Notificacion> cola =
+        Cola<Notificacion> cola =
                 pendientesPorCliente.get(
                         identificacionCliente
                 );
@@ -290,12 +295,9 @@ public class GestorNotificaciones {
 
         /*
          * Se devuelve una copia para evitar
-         * que desde afuera se modifique
-         * directamente la cola real.
+         * modificar directamente la cola.
          */
-        return new ArrayList<>(
-                cola
-        );
+        return cola.obtenerElementos();
     }
 
 
@@ -382,7 +384,7 @@ public class GestorNotificaciones {
                  * Como la notificación ya fue
                  * leída, deja de estar pendiente.
                  */
-                Queue<Notificacion> cola =
+                Cola<Notificacion> cola =
                         pendientesPorCliente.get(
                                 identificacionCliente
                         );
@@ -390,7 +392,7 @@ public class GestorNotificaciones {
 
                 if (cola != null) {
 
-                    cola.remove(
+                    cola.eliminar(
                             notificacion
                     );
                 }
