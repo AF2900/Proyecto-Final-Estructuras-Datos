@@ -433,3 +433,416 @@ public class PanelNotificaciones extends JPanel {
 
         return tabla;
     }
+
+
+    private void atenderSiguiente() {
+
+        String cliente =
+                obtenerCliente();
+
+
+        if (cliente == null) {
+
+            mostrarAdvertencia(
+                    "Seleccione un cliente."
+            );
+
+            return;
+        }
+
+
+        Notificacion notificacion =
+                sistema
+                        .atenderSiguienteNotificacion(
+                                cliente
+                        );
+
+
+        if (notificacion == null) {
+
+            mostrarAdvertencia(
+                    "El cliente no tiene notificaciones pendientes."
+            );
+
+            return;
+        }
+
+
+        actualizarDatos();
+
+
+        JOptionPane.showMessageDialog(
+                this,
+                notificacion.getMensaje(),
+                "Notificación atendida",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+
+    private void marcarSeleccionada() {
+
+        String cliente =
+                obtenerCliente();
+
+
+        int fila =
+                tablaHistorial
+                        .getSelectedRow();
+
+
+        if (cliente == null ||
+                fila < 0) {
+
+            mostrarAdvertencia(
+                    "Seleccione una notificación del historial."
+            );
+
+            return;
+        }
+
+
+        String codigo =
+                modeloHistorial
+                        .getValueAt(
+                                fila,
+                                0
+                        )
+                        .toString();
+
+
+        boolean resultado =
+                sistema
+                        .marcarNotificacionComoLeida(
+                                cliente,
+                                codigo
+                        );
+
+
+        if (!resultado) {
+
+            mostrarAdvertencia(
+                    "No fue posible marcar la notificación."
+            );
+
+            return;
+        }
+
+
+        actualizarDatos();
+    }
+
+
+    private void verSiguienteCircular() {
+
+        String cliente =
+                obtenerCliente();
+
+
+        if (cliente == null) {
+
+            mostrarAdvertencia(
+                    "Seleccione un cliente."
+            );
+
+            return;
+        }
+
+
+        Notificacion notificacion =
+                sistema
+                        .verSiguienteNotificacion(
+                                cliente
+                        );
+
+
+        if (notificacion == null) {
+
+            mostrarAdvertencia(
+                    "No existen notificaciones."
+            );
+
+            return;
+        }
+
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Código: "
+                        +
+                        notificacion.getCodigo()
+                        +
+                        "\nTipo: "
+                        +
+                        notificacion.getTipo()
+                        +
+                        "\nFecha: "
+                        +
+                        notificacion
+                                .getFecha()
+                                .format(
+                                        formatoFecha
+                                )
+                        +
+                        "\n\n"
+                        +
+                        notificacion.getMensaje(),
+                "Lista circular",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+
+    public void actualizarDatos() {
+
+        Object seleccion =
+                cmbCliente
+                        .getSelectedItem();
+
+
+        cmbCliente.removeAllItems();
+
+
+        List<Cliente> clientes =
+                sistema.obtenerClientes();
+
+
+        clientes.sort(
+                Comparator.comparing(
+                        Cliente::getIdentificacion
+                )
+        );
+
+
+        for (Cliente cliente :
+                clientes) {
+
+            cmbCliente.addItem(
+                    cliente.getIdentificacion()
+            );
+        }
+
+
+        if (seleccion != null) {
+
+            cmbCliente.setSelectedItem(
+                    seleccion
+            );
+        }
+
+
+        actualizarTablas();
+    }
+
+
+    private void actualizarTablas() {
+
+        if (modeloPendientes == null ||
+                modeloHistorial == null) {
+
+            return;
+        }
+
+
+        modeloPendientes.setRowCount(
+                0
+        );
+
+
+        modeloHistorial.setRowCount(
+                0
+        );
+
+
+        String cliente =
+                obtenerCliente();
+
+
+        if (cliente == null) {
+
+            lblTotal.setText(
+                    "Total: 0"
+            );
+
+
+            lblPendientes.setText(
+                    "Pendientes: 0"
+            );
+
+
+            return;
+        }
+
+
+        List<Notificacion> pendientes =
+                sistema
+                        .obtenerNotificacionesPendientes(
+                                cliente
+                        );
+
+
+        for (Notificacion notificacion :
+                pendientes) {
+
+            modeloPendientes.addRow(
+                    crearFila(
+                            notificacion
+                    )
+            );
+        }
+
+
+        List<Notificacion> historial =
+                sistema
+                        .obtenerNotificaciones(
+                                cliente
+                        );
+
+
+        for (Notificacion notificacion :
+                historial) {
+
+            modeloHistorial.addRow(
+                    crearFila(
+                            notificacion
+                    )
+            );
+        }
+
+
+        lblTotal.setText(
+                "Total: "
+                        +
+                        sistema
+                                .cantidadNotificaciones(
+                                        cliente
+                                )
+        );
+
+
+        lblPendientes.setText(
+                "Pendientes: "
+                        +
+                        sistema
+                                .cantidadNotificacionesPendientes(
+                                        cliente
+                                )
+        );
+    }
+
+
+    private Object[] crearFila(
+            Notificacion notificacion) {
+
+        return new Object[]{
+                notificacion.getCodigo(),
+                notificacion
+                        .getFecha()
+                        .format(
+                        formatoFecha
+                ),
+                notificacion.getTipo(),
+                notificacion.getMensaje(),
+                notificacion.isLeida()
+                        ?
+                        "LEÍDA"
+                        :
+                        "PENDIENTE"
+        };
+    }
+
+
+    private String obtenerCliente() {
+
+        if (cmbCliente
+                .getSelectedItem()
+                == null) {
+
+            return null;
+        }
+
+
+        return cmbCliente
+                .getSelectedItem()
+                .toString();
+    }
+
+
+    private JPanel crearTarjeta() {
+
+        JPanel panel =
+                new JPanel(
+                        new BorderLayout(
+                                10,
+                                10
+                        )
+                );
+
+
+        panel.setBackground(
+                BLANCO
+        );
+
+
+        panel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                new Color(
+                                        225,
+                                        230,
+                                        236
+                                )
+                        ),
+                        new EmptyBorder(
+                                16,
+                                18,
+                                16,
+                                18
+                        )
+                )
+        );
+
+
+        return panel;
+    }
+
+
+    private JButton crearBoton(
+            String texto) {
+
+        JButton boton =
+                new JButton(
+                        texto
+                );
+
+
+        boton.setBackground(
+                AZUL
+        );
+
+
+        boton.setForeground(
+                BLANCO
+        );
+
+
+        boton.setFocusPainted(
+                false
+        );
+
+
+        return boton;
+    }
+
+
+    private void mostrarAdvertencia(
+            String mensaje) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                mensaje,
+                "Notificaciones",
+                JOptionPane.WARNING_MESSAGE
+        );
+    }
+}
