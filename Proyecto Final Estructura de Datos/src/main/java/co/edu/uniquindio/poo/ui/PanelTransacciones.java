@@ -1117,4 +1117,1325 @@ public class PanelTransacciones extends JPanel {
 
         return tarjeta;
     }
-    
+
+
+    // ---------------------------------------------------------
+    // DEPÓSITO
+    // ---------------------------------------------------------
+
+    private void realizarDeposito() {
+
+        String cliente =
+                obtenerSeleccion(
+                        cmbClienteDeposito
+                );
+
+        String monedero =
+                obtenerSeleccion(
+                        cmbMonederoDeposito
+                );
+
+        Double monto =
+                leerMonto(
+                        txtMontoDeposito
+                );
+
+
+        if (cliente == null ||
+                monedero == null ||
+                monto == null) {
+
+            return;
+        }
+
+
+        Transaccion transaccion =
+                sistema.depositar(
+                        cliente,
+                        monedero,
+                        monto
+                );
+
+
+        if (transaccion == null) {
+
+            mostrarError(
+                    "No fue posible realizar el depósito."
+            );
+
+            return;
+        }
+
+
+        txtMontoDeposito.setText(
+                ""
+        );
+
+
+        finalizarOperacion(
+                transaccion,
+                cliente
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // RETIRO
+    // ---------------------------------------------------------
+
+    private void realizarRetiro() {
+
+        String cliente =
+                obtenerSeleccion(
+                        cmbClienteRetiro
+                );
+
+        String monedero =
+                obtenerSeleccion(
+                        cmbMonederoRetiro
+                );
+
+        Double monto =
+                leerMonto(
+                        txtMontoRetiro
+                );
+
+
+        if (cliente == null ||
+                monedero == null ||
+                monto == null) {
+
+            return;
+        }
+
+
+        Transaccion transaccion =
+                sistema.retirar(
+                        cliente,
+                        monedero,
+                        monto
+                );
+
+
+        if (transaccion == null) {
+
+            mostrarError(
+                    "No fue posible realizar el retiro.\n"
+                            +
+                            "Verifique el saldo disponible para cubrir el monto y la comisión."
+            );
+
+            return;
+        }
+
+
+        txtMontoRetiro.setText(
+                ""
+        );
+
+
+        finalizarOperacion(
+                transaccion,
+                cliente
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // TRANSFERENCIA
+    // ---------------------------------------------------------
+
+    private void realizarTransferencia() {
+
+        String clienteOrigen =
+                obtenerSeleccion(
+                        cmbClienteOrigen
+                );
+
+        String monederoOrigen =
+                obtenerSeleccion(
+                        cmbMonederoOrigen
+                );
+
+        String clienteDestino =
+                obtenerSeleccion(
+                        cmbClienteDestino
+                );
+
+        String monederoDestino =
+                obtenerSeleccion(
+                        cmbMonederoDestino
+                );
+
+        Double monto =
+                leerMonto(
+                        txtMontoTransferencia
+                );
+
+
+        if (clienteOrigen == null ||
+                monederoOrigen == null ||
+                clienteDestino == null ||
+                monederoDestino == null ||
+                monto == null) {
+
+            return;
+        }
+
+
+        Transaccion transaccion =
+                sistema.transferir(
+                        clienteOrigen,
+                        monederoOrigen,
+                        clienteDestino,
+                        monederoDestino,
+                        monto
+                );
+
+
+        if (transaccion == null) {
+
+            mostrarError(
+                    "No fue posible realizar la transferencia.\n\n"
+                            +
+                            "Revise el saldo, los monederos seleccionados "
+                            +
+                            "y que origen y destino no sean exactamente la misma cuenta."
+            );
+
+            return;
+        }
+
+
+        txtMontoTransferencia.setText(
+                ""
+        );
+
+
+        finalizarOperacion(
+                transaccion,
+                clienteOrigen
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // GASTO
+    // ---------------------------------------------------------
+
+    private void realizarGasto() {
+
+        String cliente =
+                obtenerSeleccion(
+                        cmbClienteGasto
+                );
+
+        String monedero =
+                obtenerSeleccion(
+                        cmbMonederoGasto
+                );
+
+        CategoriaGasto categoria =
+                (CategoriaGasto)
+                        cmbCategoriaGasto
+                                .getSelectedItem();
+
+        Double monto =
+                leerMonto(
+                        txtMontoGasto
+                );
+
+
+        if (cliente == null ||
+                monedero == null ||
+                categoria == null ||
+                monto == null) {
+
+            return;
+        }
+
+
+        Transaccion transaccion =
+                sistema.realizarGasto(
+                        cliente,
+                        monedero,
+                        monto,
+                        categoria
+                );
+
+
+        if (transaccion == null) {
+
+            mostrarError(
+                    "No fue posible registrar el gasto.\n"
+                            +
+                            "Verifique que exista saldo suficiente."
+            );
+
+            return;
+        }
+
+
+        txtMontoGasto.setText(
+                ""
+        );
+
+
+        finalizarOperacion(
+                transaccion,
+                cliente
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // FINALIZAR OPERACIÓN
+    // ---------------------------------------------------------
+
+    private void finalizarOperacion(
+            Transaccion transaccion,
+            String clienteHistorial) {
+
+        actualizarDatos();
+
+
+        cmbClienteHistorial
+                .setSelectedItem(
+                        clienteHistorial
+                );
+
+
+        actualizarHistorial();
+
+
+        if (alActualizarDatos != null) {
+
+            alActualizarDatos.run();
+        }
+
+
+        mostrarResultadoTransaccion(
+                transaccion
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // RESULTADO TRANSACCIÓN
+    // ---------------------------------------------------------
+
+    private void mostrarResultadoTransaccion(
+            Transaccion transaccion) {
+
+        StringBuilder mensaje =
+                new StringBuilder();
+
+
+        mensaje.append(
+                "Operación realizada correctamente.\n\n"
+        );
+
+
+        mensaje.append(
+                "Código: "
+        );
+
+        mensaje.append(
+                transaccion.getCodigo()
+        );
+
+
+        mensaje.append(
+                "\nTipo: "
+        );
+
+        mensaje.append(
+                transaccion.getTipo()
+        );
+
+
+        mensaje.append(
+                "\nMonto: $ "
+        );
+
+        mensaje.append(
+                String.format(
+                        "%,.2f",
+                        transaccion.getMonto()
+                )
+        );
+
+
+        mensaje.append(
+                "\nComisión: $ "
+        );
+
+        mensaje.append(
+                String.format(
+                        "%,.2f",
+                        transaccion.getComision()
+                )
+        );
+
+
+        mensaje.append(
+                "\nPuntos generados: "
+        );
+
+        mensaje.append(
+                transaccion.getPuntosGenerados()
+        );
+
+
+        if (transaccion.getCategoriaGasto()
+                != null) {
+
+            mensaje.append(
+                    "\nCategoría: "
+            );
+
+            mensaje.append(
+                    transaccion.getCategoriaGasto()
+            );
+        }
+
+
+        JOptionPane.showMessageDialog(
+                this,
+                mensaje.toString(),
+                "Transacción realizada",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // ACTUALIZAR DATOS
+    // ---------------------------------------------------------
+
+    public void actualizarDatos() {
+
+        actualizarComboClientes(
+                cmbClienteDeposito
+        );
+
+        actualizarComboClientes(
+                cmbClienteRetiro
+        );
+
+        actualizarComboClientes(
+                cmbClienteOrigen
+        );
+
+        actualizarComboClientes(
+                cmbClienteDestino
+        );
+
+        actualizarComboClientes(
+                cmbClienteGasto
+        );
+
+        actualizarComboClientes(
+                cmbClienteConsulta
+        );
+
+        actualizarComboClientes(
+                cmbClienteHistorial
+        );
+
+
+        actualizarMonederos(
+                cmbClienteDeposito,
+                cmbMonederoDeposito
+        );
+
+        actualizarMonederos(
+                cmbClienteRetiro,
+                cmbMonederoRetiro
+        );
+
+        actualizarMonederos(
+                cmbClienteOrigen,
+                cmbMonederoOrigen
+        );
+
+        actualizarMonederos(
+                cmbClienteDestino,
+                cmbMonederoDestino
+        );
+
+        actualizarMonederos(
+                cmbClienteGasto,
+                cmbMonederoGasto
+        );
+
+        actualizarMonederos(
+                cmbClienteConsulta,
+                cmbMonederoConsulta
+        );
+
+
+        actualizarSaldoConsulta();
+
+        actualizarHistorial();
+    }
+
+
+    // ---------------------------------------------------------
+    // ACTUALIZAR CLIENTES
+    // ---------------------------------------------------------
+
+    private void actualizarComboClientes(
+            JComboBox<String> combo) {
+
+        if (combo == null) {
+            return;
+        }
+
+
+        Object seleccionAnterior =
+                combo.getSelectedItem();
+
+
+        combo.removeAllItems();
+
+
+        List<Cliente> clientes =
+                sistema.obtenerClientes();
+
+
+        clientes.sort(
+                Comparator.comparing(
+                        Cliente::getIdentificacion
+                )
+        );
+
+
+        for (Cliente cliente :
+                clientes) {
+
+            combo.addItem(
+                    cliente.getIdentificacion()
+            );
+        }
+
+
+        if (seleccionAnterior != null) {
+
+            combo.setSelectedItem(
+                    seleccionAnterior
+            );
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // ACTUALIZAR MONEDEROS
+    // ---------------------------------------------------------
+
+    private void actualizarMonederos(
+            JComboBox<String> comboCliente,
+            JComboBox<String> comboMonedero) {
+
+        if (comboCliente == null ||
+                comboMonedero == null) {
+
+            return;
+        }
+
+
+        Object seleccionAnterior =
+                comboMonedero
+                        .getSelectedItem();
+
+
+        comboMonedero
+                .removeAllItems();
+
+
+        String cliente =
+                obtenerSeleccion(
+                        comboCliente
+                );
+
+
+        if (cliente == null) {
+            return;
+        }
+
+
+        Cliente objetoCliente =
+                sistema.buscarCliente(
+                        cliente
+                );
+
+
+        if (objetoCliente == null) {
+            return;
+        }
+
+
+        List<Monedero> monederos =
+                objetoCliente
+                        .obtenerMonederos();
+
+
+        monederos.sort(
+                Comparator.comparing(
+                        Monedero::getId
+                )
+        );
+
+
+        for (Monedero monedero :
+                monederos) {
+
+            comboMonedero.addItem(
+                    monedero.getId()
+            );
+        }
+
+
+        if (seleccionAnterior != null) {
+
+            comboMonedero.setSelectedItem(
+                    seleccionAnterior
+            );
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // ACTUALIZAR SALDO
+    // ---------------------------------------------------------
+
+    private void actualizarSaldoConsulta() {
+
+        if (lblSaldoConsulta == null) {
+            return;
+        }
+
+
+        String cliente =
+                obtenerSeleccion(
+                        cmbClienteConsulta
+                );
+
+
+        String monedero =
+                obtenerSeleccion(
+                        cmbMonederoConsulta
+                );
+
+
+        if (cliente == null ||
+                monedero == null) {
+
+            lblSaldoConsulta.setText(
+                    "$ 0.00"
+            );
+
+            return;
+        }
+
+
+        Double saldo =
+                sistema.consultarSaldo(
+                        cliente,
+                        monedero
+                );
+
+
+        if (saldo == null) {
+
+            lblSaldoConsulta.setText(
+                    "$ 0.00"
+            );
+
+            return;
+        }
+
+
+        lblSaldoConsulta.setText(
+                String.format(
+                        "$ %,.2f",
+                        saldo
+                )
+        );
+
+
+        // Obliga a Swing a recalcular el espacio visual
+        // después de modificar el texto.
+        lblSaldoConsulta.revalidate();
+        lblSaldoConsulta.repaint();
+    }
+
+
+    // ---------------------------------------------------------
+    // HISTORIAL
+    // ---------------------------------------------------------
+
+    private void actualizarHistorial() {
+
+        if (modeloHistorial == null) {
+            return;
+        }
+
+
+        modeloHistorial.setRowCount(
+                0
+        );
+
+
+        String cliente =
+                obtenerSeleccion(
+                        cmbClienteHistorial
+                );
+
+
+        if (cliente == null) {
+            return;
+        }
+
+
+        List<Transaccion> historial =
+                sistema.obtenerHistorial(
+                        cliente
+                );
+
+
+        for (Transaccion transaccion :
+                historial) {
+
+            String origen =
+                    transaccion
+                            .getIdentificacionOrigen()
+                            +
+                            " / "
+                            +
+                            transaccion
+                                    .getMonederoOrigen();
+
+
+            String destino =
+                    "-";
+
+
+            if (transaccion.getIdentificacionDestino()
+                    != null) {
+
+                destino =
+                        transaccion
+                                .getIdentificacionDestino()
+                                +
+                                " / "
+                                +
+                                transaccion
+                                        .getMonederoDestino();
+            }
+
+
+            String categoria =
+                    transaccion
+                            .getCategoriaGasto()
+                            == null
+                            ?
+                            "-"
+                            :
+                            transaccion
+                                    .getCategoriaGasto()
+                                    .toString();
+
+
+            modeloHistorial.addRow(
+                    new Object[]{
+                            transaccion.getCodigo(),
+                            transaccion
+                                    .getFecha()
+                                    .format(
+                                    formatoFecha
+                            ),
+                            transaccion.getTipo(),
+                            String.format(
+                                    "%,.2f",
+                                    transaccion.getMonto()
+                            ),
+                            String.format(
+                                    "%,.2f",
+                                    transaccion.getComision()
+                            ),
+                            origen,
+                            destino,
+                            categoria,
+                            transaccion.getPuntosGenerados(),
+                            transaccion.isRevertida()
+                                    ?
+                                    "REVERTIDA"
+                                    :
+                                    "ACTIVA"
+                    }
+            );
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // LEER MONTO
+    // ---------------------------------------------------------
+
+    private Double leerMonto(
+            JTextField campo) {
+
+        String texto =
+                campo
+                        .getText()
+                        .trim();
+
+
+        if (texto.isEmpty()) {
+
+            mostrarAdvertencia(
+                    "Debe ingresar un monto."
+            );
+
+            return null;
+        }
+
+
+        try {
+
+            double monto =
+                    Double.parseDouble(
+                            texto.replace(
+                                    ",",
+                                    "."
+                            )
+                    );
+
+
+            if (monto <= 0) {
+
+                mostrarAdvertencia(
+                        "El monto debe ser mayor que cero."
+                );
+
+                return null;
+            }
+
+
+            return monto;
+
+        } catch (NumberFormatException e) {
+
+            mostrarAdvertencia(
+                    "Ingrese un monto numérico válido."
+            );
+
+            return null;
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // SELECCIÓN
+    // ---------------------------------------------------------
+
+    private String obtenerSeleccion(
+            JComboBox<String> combo) {
+
+        if (combo == null ||
+                combo.getSelectedItem()
+                        == null) {
+
+            return null;
+        }
+
+
+        return combo
+                .getSelectedItem()
+                .toString();
+    }
+
+
+    // ---------------------------------------------------------
+    // FORMULARIO
+    // ---------------------------------------------------------
+
+    private JPanel crearFormulario(
+            String titulo,
+            String descripcion,
+            JPanel campos) {
+
+        JPanel fondo =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+
+        fondo.setBackground(
+                FONDO
+        );
+
+
+        JPanel tarjeta =
+                crearTarjeta();
+
+
+        tarjeta.setPreferredSize(
+                new Dimension(
+                        620,
+                        430
+                )
+        );
+
+
+        JPanel encabezado =
+                new JPanel();
+
+
+        encabezado.setLayout(
+                new BoxLayout(
+                        encabezado,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+
+        encabezado.setOpaque(
+                false
+        );
+
+
+        JLabel lblTitulo =
+                crearTitulo(
+                        titulo
+                );
+
+
+        JLabel lblDescripcion =
+                new JLabel(
+                        descripcion
+                );
+
+
+        lblDescripcion.setForeground(
+                TEXTO_SECUNDARIO
+        );
+
+
+        lblDescripcion.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+
+        encabezado.add(
+                lblTitulo
+        );
+
+        encabezado.add(
+                Box.createRigidArea(
+                        new Dimension(
+                                0,
+                                5
+                        )
+                )
+        );
+
+        encabezado.add(
+                lblDescripcion
+        );
+
+
+        tarjeta.add(
+                encabezado,
+                BorderLayout.NORTH
+        );
+
+
+        tarjeta.add(
+                campos,
+                BorderLayout.CENTER
+        );
+
+
+        fondo.add(
+                tarjeta
+        );
+
+
+        return fondo;
+    }
+
+
+    // ---------------------------------------------------------
+    // PANEL DE CAMPOS
+    // ---------------------------------------------------------
+
+    private JPanel crearPanelCampos() {
+
+        JPanel panel =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+
+        panel.setOpaque(
+                false
+        );
+
+
+        panel.setBorder(
+                new EmptyBorder(
+                        20,
+                        0,
+                        0,
+                        0
+                )
+        );
+
+
+        return panel;
+    }
+
+
+    private void agregarCampo(
+            JPanel panel,
+            int fila,
+            String texto,
+            JComponent componente) {
+
+        GridBagConstraints gbc =
+                restricciones();
+
+
+        gbc.gridx = 0;
+        gbc.gridy = fila;
+
+
+        panel.add(
+                crearEtiqueta(
+                        texto
+                ),
+                gbc
+        );
+
+
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+
+
+        panel.add(
+                componente,
+                gbc
+        );
+    }
+
+
+    private void agregarBoton(
+            JPanel panel,
+            int fila,
+            JButton boton) {
+
+        GridBagConstraints gbc =
+                restricciones();
+
+
+        gbc.gridx = 1;
+        gbc.gridy = fila;
+
+
+        gbc.insets =
+                new Insets(
+                        18,
+                        8,
+                        5,
+                        8
+                );
+
+
+        panel.add(
+                boton,
+                gbc
+        );
+    }
+
+
+    private GridBagConstraints restricciones() {
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+
+        gbc.insets =
+                new Insets(
+                        8,
+                        8,
+                        8,
+                        8
+                );
+
+
+        gbc.anchor =
+                GridBagConstraints.WEST;
+
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+
+        return gbc;
+    }
+
+
+    // ---------------------------------------------------------
+    // TARJETAS
+    // ---------------------------------------------------------
+
+    private JPanel crearTarjeta() {
+
+        JPanel tarjeta =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+
+        tarjeta.setBackground(
+                BLANCO
+        );
+
+
+        tarjeta.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                new Color(
+                                        225,
+                                        230,
+                                        236
+                                )
+                        ),
+                        new EmptyBorder(
+                                20,
+                                24,
+                                20,
+                                24
+                        )
+                )
+        );
+
+
+        return tarjeta;
+    }
+
+
+    private JLabel crearTitulo(
+            String texto) {
+
+        JLabel label =
+                new JLabel(
+                        texto
+                );
+
+
+        label.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        18
+                )
+        );
+
+
+        label.setForeground(
+                TEXTO_PRINCIPAL
+        );
+
+
+        return label;
+    }
+
+
+    private JLabel crearEtiqueta(
+            String texto) {
+
+        JLabel label =
+                new JLabel(
+                        texto
+                );
+
+
+        label.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+
+        label.setForeground(
+                TEXTO_SECUNDARIO
+        );
+
+
+        return label;
+    }
+
+
+    // ---------------------------------------------------------
+    // CAMPOS
+    // ---------------------------------------------------------
+
+    private JTextField crearCampoTexto() {
+
+        JTextField campo =
+                new JTextField();
+
+
+        campo.setPreferredSize(
+                new Dimension(
+                        250,
+                        34
+                )
+        );
+
+
+        campo.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+
+        return campo;
+    }
+
+
+    private JComboBox<String> crearComboTexto() {
+
+        JComboBox<String> combo =
+                new JComboBox<>();
+
+
+        configurarCombo(
+                combo
+        );
+
+
+        return combo;
+    }
+
+
+    private void configurarCombo(
+            JComboBox<?> combo) {
+
+        combo.setPreferredSize(
+                new Dimension(
+                        250,
+                        34
+                )
+        );
+
+
+        combo.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+    }
+
+
+    // ---------------------------------------------------------
+    // BOTÓN
+    // ---------------------------------------------------------
+
+    private JButton crearBotonPrincipal(
+            String texto) {
+
+        JButton boton =
+                new JButton(
+                        texto
+                );
+
+
+        boton.setPreferredSize(
+                new Dimension(
+                        180,
+                        38
+                )
+        );
+
+
+        boton.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        13
+                )
+        );
+
+
+        boton.setForeground(
+                BLANCO
+        );
+
+        boton.setBackground(
+                AZUL_PRINCIPAL
+        );
+
+        boton.setOpaque(
+                true
+        );
+
+        boton.setContentAreaFilled(
+                true
+        );
+
+        boton.setFocusPainted(
+                false
+        );
+
+        boton.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+
+        return boton;
+    }
+
+
+    // ---------------------------------------------------------
+    // MENSAJES
+    // ---------------------------------------------------------
+
+    private void mostrarAdvertencia(
+            String mensaje) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                mensaje,
+                "Datos inválidos",
+                JOptionPane.WARNING_MESSAGE
+        );
+    }
+
+
+    private void mostrarError(
+            String mensaje) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                mensaje,
+                "Operación no realizada",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
