@@ -406,3 +406,254 @@ public class PanelReversiones extends JPanel {
                 tarjeta
         );
     }
+
+    
+    private void agregarDato(
+            JPanel panel,
+            String titulo,
+            JLabel valor) {
+
+        JLabel etiqueta =
+                new JLabel(
+                        titulo + ":"
+                );
+
+
+        etiqueta.setForeground(
+                SECUNDARIO
+        );
+
+
+        valor.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        13
+                )
+        );
+
+
+        valor.setForeground(
+                TEXTO
+        );
+
+
+        panel.add(
+                etiqueta
+        );
+
+
+        panel.add(
+                valor
+        );
+    }
+
+
+    public void actualizarDatos() {
+
+        lblCantidad.setText(
+                "Transacciones reversibles: "
+                        +
+                        sistema
+                                .cantidadTransaccionesReversibles()
+        );
+
+
+        Transaccion transaccion =
+                sistema
+                        .verUltimaTransaccionReversible();
+
+
+        if (transaccion == null) {
+
+            limpiar();
+
+            return;
+        }
+
+
+        lblCodigo.setText(
+                transaccion.getCodigo()
+        );
+
+
+        lblTipo.setText(
+                transaccion
+                        .getTipo()
+                        .toString()
+        );
+
+
+        lblFecha.setText(
+                transaccion
+                        .getFecha()
+                        .format(
+                                formatoFecha
+                        )
+        );
+
+
+        lblMonto.setText(
+                String.format(
+                        "$ %,.2f",
+                        transaccion.getMonto()
+                )
+        );
+
+
+        lblComision.setText(
+                String.format(
+                        "$ %,.2f",
+                        transaccion.getComision()
+                )
+        );
+
+
+        lblOrigen.setText(
+                transaccion
+                        .getIdentificacionOrigen()
+                        +
+                        " / "
+                        +
+                        transaccion
+                                .getMonederoOrigen()
+        );
+
+
+        if (transaccion
+                .getIdentificacionDestino()
+                == null) {
+
+            lblDestino.setText(
+                    "-"
+            );
+
+        } else {
+
+            lblDestino.setText(
+                    transaccion
+                            .getIdentificacionDestino()
+                            +
+                            " / "
+                            +
+                            transaccion
+                                    .getMonederoDestino()
+            );
+        }
+
+
+        lblPuntos.setText(
+                String.valueOf(
+                        transaccion
+                                .getPuntosGenerados()
+                )
+        );
+    }
+
+
+    private void revertir() {
+
+        Transaccion actual =
+                sistema
+                        .verUltimaTransaccionReversible();
+
+
+        if (actual == null) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No existen transacciones para revertir.",
+                    "Reversiones",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+
+        int confirmacion =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Se revertirá la última transacción:\n\n"
+                                +
+                                actual.getCodigo()
+                                +
+                                " - "
+                                +
+                                actual.getTipo()
+                                +
+                                "\nMonto: $ "
+                                +
+                                String.format(
+                                        "%,.2f",
+                                        actual.getMonto()
+                                )
+                                +
+                                "\n\n¿Desea continuar?",
+                        "Confirmar reversión",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+
+        if (confirmacion !=
+                JOptionPane.YES_OPTION) {
+
+            return;
+        }
+
+
+        Transaccion revertida =
+                sistema
+                        .revertirUltimaTransaccion();
+
+
+        if (revertida == null) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No fue posible realizar la reversión.\n"
+                            +
+                            "La operación puede no cumplir las condiciones necesarias.",
+                    "Reversión no realizada",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+
+        actualizarDatos();
+
+
+        if (alActualizarDatos != null) {
+
+            alActualizarDatos.run();
+        }
+
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Transacción "
+                        +
+                        revertida.getCodigo()
+                        +
+                        " revertida correctamente.",
+                "Reversión realizada",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+
+    private void limpiar() {
+
+        lblCodigo.setText("-");
+        lblTipo.setText("-");
+        lblFecha.setText("-");
+        lblMonto.setText("-");
+        lblComision.setText("-");
+        lblOrigen.setText("-");
+        lblDestino.setText("-");
+        lblPuntos.setText("-");
+    }
+}
