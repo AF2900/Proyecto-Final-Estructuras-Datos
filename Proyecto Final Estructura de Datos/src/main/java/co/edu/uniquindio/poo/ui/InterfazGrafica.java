@@ -3,7 +3,7 @@ package co.edu.uniquindio.poo.ui;
 import co.edu.uniquindio.poo.MonederoVirtual;
 import co.edu.uniquindio.poo.model.Cliente;
 import co.edu.uniquindio.poo.model.ReporteSistema;
-
+import co.edu.uniquindio.poo.model.Monedero;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -81,6 +81,8 @@ public class InterfazGrafica extends JFrame {
         sistema =
                 new MonederoVirtual();
 
+        cargarDatosDeEjemplo();
+
 
         configurarVentana();
 
@@ -97,6 +99,33 @@ public class InterfazGrafica extends JFrame {
         actualizarDashboard();
     }
 
+
+    // ---------------------------------------------------------
+    // DATOS DE EJEMPLO (clientes y monederos precargados)
+    // ---------------------------------------------------------
+
+    private void cargarDatosDeEjemplo() {
+
+        // Cliente 1
+        sistema.registrarCliente(
+                new Cliente("1094882317", "Douglas Álvarez")
+        );
+
+        sistema.crearMonedero(
+                "1094882317",
+                new Monedero("1001", "Monedero Principal", 800000)
+        );
+
+        // Cliente 2
+        sistema.registrarCliente(
+                new Cliente("1005431976", "Sara Ramírez")
+        );
+
+        sistema.crearMonedero(
+                "1005431976",
+                new Monedero("2002", "Monedero Ahorros", 1200000)
+        );
+    }
 
     // ---------------------------------------------------------
     // VENTANA
@@ -1208,15 +1237,17 @@ public class InterfazGrafica extends JFrame {
 
         JLabel descripcion =
                 new JLabel(
-                        "<html><div style='width:390px'>"
+                        "<html>"
                                 +
-                                "Gestiona clientes, monederos, transacciones, "
+                                "Gestiona clientes, monederos,<br>"
                                 +
-                                "puntos, beneficios y estructuras de datos "
+                                "transacciones, puntos, beneficios<br>"
                                 +
-                                "desde una sola aplicación."
+                                "y estructuras de datos desde<br>"
                                 +
-                                "</div></html>"
+                                "una sola aplicación."
+                                +
+                                "</html>"
                 );
 
 

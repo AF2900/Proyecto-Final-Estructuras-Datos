@@ -1141,10 +1141,14 @@ public class PanelTransacciones extends JPanel {
                 );
 
 
-        if (cliente == null ||
-                monedero == null ||
-                monto == null) {
+        if (cliente == null || monedero == null) {
+            if (monto != null) {
+                avisarSeleccionFaltante();
+            }
+            return;
+        }
 
+        if (monto == null) {
             return;
         }
 
@@ -1201,10 +1205,14 @@ public class PanelTransacciones extends JPanel {
                 );
 
 
-        if (cliente == null ||
-                monedero == null ||
-                monto == null) {
+        if (cliente == null || monedero == null) {
+            if (monto != null) {
+                avisarSeleccionFaltante();
+            }
+            return;
+        }
 
+        if (monto == null) {
             return;
         }
 
@@ -1273,12 +1281,14 @@ public class PanelTransacciones extends JPanel {
                 );
 
 
-        if (clienteOrigen == null ||
-                monederoOrigen == null ||
-                clienteDestino == null ||
-                monederoDestino == null ||
-                monto == null) {
+        if (clienteOrigen == null || monederoOrigen == null || clienteDestino == null || monederoDestino == null) {
+            if (monto != null) {
+                avisarSeleccionFaltante();
+            }
+            return;
+        }
 
+        if (monto == null) {
             return;
         }
 
@@ -1346,11 +1356,14 @@ public class PanelTransacciones extends JPanel {
                 );
 
 
-        if (cliente == null ||
-                monedero == null ||
-                categoria == null ||
-                monto == null) {
+        if (cliente == null || monedero == null || categoria == null) {
+            if (monto != null) {
+                avisarSeleccionFaltante();
+            }
+            return;
+        }
 
+        if (monto == null) {
             return;
         }
 
@@ -2415,6 +2428,18 @@ public class PanelTransacciones extends JPanel {
     // ---------------------------------------------------------
     // MENSAJES
     // ---------------------------------------------------------
+
+    // Avisa cuando falta elegir un cliente o un monedero (por ejemplo, cuando
+    // el cliente destino todavia no tiene monederos creados)
+    private void avisarSeleccionFaltante() {
+
+        mostrarAdvertencia(
+                "Seleccione el cliente y el monedero de la operación "
+                        + "(origen y destino, en una transferencia).\n\n"
+                        + "Si el cliente no tiene monederos, créele uno "
+                        + "primero en la sección Clientes."
+        );
+    }
 
     private void mostrarAdvertencia(
             String mensaje) {

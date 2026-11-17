@@ -318,7 +318,7 @@ public class PanelReversiones extends JPanel {
 
         JLabel advertencia =
                 new JLabel(
-                        "La reversión también restaura la comisión cuando corresponde."
+                        "La reversión también restaura la comisión."
                 );
 
 
